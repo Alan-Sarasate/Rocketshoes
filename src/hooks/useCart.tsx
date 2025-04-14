@@ -1,15 +1,11 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from "react"
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react"
 import IStock from "../types/interfaces/Stock";
-import { ToastContainer, toast } from "react-toastify";
+import {toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 interface ICartData {
     product_id: number;
     quantity?: number;
-}
-
-interface ICartProviderProps {
-    children: React.ReactNode;
 }
 
 interface ICartContextData {
@@ -20,10 +16,13 @@ interface ICartContextData {
     completeOrder: () => void
 }
 
+interface ICartProvider {
+    children: ReactNode;
+}
 
-export const CartContext = createContext<ICartContextData>({} as ICartContextData)
+const cartContext = createContext<ICartContextData>({} as ICartContextData)
 
-export const CartProvider:React.FC<ICartProviderProps> = ({children}) => {
+export const CartProvider = ({children}:ICartProvider) => {
 
     const [stock, setStock] = useState<IStock[]>([])
     const [cart, setCart] = useState<ICartData[]>(() => {
@@ -66,7 +65,7 @@ export const CartProvider:React.FC<ICartProviderProps> = ({children}) => {
             }
 
             if(!product) {
-                setCart(cart => [...cart, {product_id: product_id, quantity: 1}])
+                setCart(oldCart => [...oldCart, {product_id: product_id, quantity: 1}])
                 toast.success("Produto adicionado com sucesso!!!")
                 return
             }
@@ -76,7 +75,7 @@ export const CartProvider:React.FC<ICartProviderProps> = ({children}) => {
                 return
             }
 
-            setCart(prevCart => prevCart.map(product => product.product_id == product_id ? {...product, quantity: (product.quantity || 0) + 1} : product))
+            setCart(oldCart => oldCart.map(cartProduct => cartProduct.product_id === product_id ? {...cartProduct, quantity: (cartProduct.quantity??0) + 1 } : cartProduct))
         } catch(e){
             toast.error("Erro na adição do produto.")
         }
@@ -120,16 +119,17 @@ export const CartProvider:React.FC<ICartProviderProps> = ({children}) => {
         navigate('/products')
         toast.success("Pedido concluído com sucesso")
     }, [cart])
-    
+
     return (
-        <CartContext.Provider value={{products: cart, addProduct, removeProduct, updateProductAmount, completeOrder}}>
+        <cartContext.Provider value={{products: cart, addProduct, removeProduct, updateProductAmount, completeOrder}}>
             {children}
-            <ToastContainer/>
-        </CartContext.Provider>
+        </cartContext.Provider>
     )
 }
 
+
+
 export const useCart = ():ICartContextData => {
-    const context = useContext(CartContext)
+    const context = useContext(cartContext)
     return context
 }

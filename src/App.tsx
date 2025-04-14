@@ -1,21 +1,20 @@
-import {Routes} from './routes'
 import { BrowserRouter } from 'react-router-dom'
-import { CartProvider } from './hooks/useCart'
+import {Routes} from './routes'
+import { ToastContainer } from 'react-toastify'
 import './global.css'
-import { Provider } from 'react-redux'
-import store from './redux/store'
+
+import { CartProvider } from './hooks/useCart'
 
 function App() {
 
   return (
     <>
-    <Provider store={store}>
       <BrowserRouter>
         <CartProvider>
+          <ToastContainer/>
           <Routes/>
         </CartProvider>
       </BrowserRouter>
-    </Provider>
     </>
   )
 }
